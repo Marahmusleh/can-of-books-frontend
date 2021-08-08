@@ -19,7 +19,7 @@ import Login from './Login';
 class App extends React.Component {
 
   render() {
-    const {isAuthenticated}=this.props.auth0;
+    // const {isAuthenticated}=this.props.auth0;
     console.log('app', this.props);
     return(
       <>
@@ -28,10 +28,10 @@ class App extends React.Component {
             <Header />
             <Switch>
               <Route exact path="/">
-                {isAuthenticated&&
-                <BestBooks/>}
+              {this.props.auth0.isAuthenticated && <Login />}
+                {this.props.auth0.isAuthenticated && <BestBooks />}
                 {/* */}
-                <Login/>
+                
                 {/* TODO: if the user is logged in, render the `BestBooks` component, if they are not, render the `Login` component */}
               </Route>
               <Route exact path="/profile">
