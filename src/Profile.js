@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withAuth0 } from '@auth0/auth0-react';
-//import Content from './components/Content';
+import Content from './Components/Content';
 
 
 class Profile extends Component {
@@ -15,8 +15,7 @@ class Profile extends Component {
         <p>
           {user.email}
         </p>
-        {/* <Content />*/}
-        
+        <Content />  
       </div>
     );
   }
