@@ -5,7 +5,7 @@ import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
 import Carousel from 'react-bootstrap/Carousel';
 
-class MyFavoriteBooks extends React.Component {
+class BestBooks extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -36,8 +36,8 @@ class MyFavoriteBooks extends React.Component {
         <>
           <Carousel>
             {this.state.books.length > 0 &&
-              this.state.books.map((value) => (
-                <Carousel.Item>
+              this.state.books.map((value,id) => (
+                <Carousel.Item key={id}>
                   <img
                     className='d-block w-30'
                     style={{
@@ -72,6 +72,7 @@ class MyFavoriteBooks extends React.Component {
                       }}
                     >
                       {value.description}
+                      {value.status}
                     </p>
                   </Carousel.Caption>
                 </Carousel.Item>
@@ -83,4 +84,4 @@ class MyFavoriteBooks extends React.Component {
   }
 }
 
-export default withAuth0(MyFavoriteBooks);
+export default withAuth0(BestBooks);
