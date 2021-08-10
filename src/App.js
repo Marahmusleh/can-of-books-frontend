@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from './Header';
-import IsLoadingAndError from './IsLoadingAndError';
 import Footer from './Footer';
 ///-----
 import { withAuth0 } from '@auth0/auth0-react';
@@ -24,7 +23,6 @@ class App extends React.Component {
     return(
       <>
         <Router>
-          <IsLoadingAndError>
             <Header />
             <Switch>
               <Route exact path="/">
@@ -39,12 +37,12 @@ class App extends React.Component {
               </Route>
               {/* TODO: add a route with a path of '/profile' that renders a `Profile` component */}
             </Switch>
-            <Footer />
-          </IsLoadingAndError>
         </Router>
+        <Footer />
       </>
     );
   }
 }
 
 export default withAuth0(App);
+
