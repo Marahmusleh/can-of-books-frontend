@@ -6,6 +6,7 @@ import { withAuth0 } from '@auth0/auth0-react';
 import Carousel from 'react-bootstrap/Carousel';
 import BookFormModal from './Components/BookFormModal';
 import Button from 'react-bootstrap/Button';
+import UpdatedBook from './Components/UpdatedBook';
 
 
 
@@ -17,6 +18,8 @@ class BestBooks extends React.Component {
       ownerEmail: this.props.auth0.user.email,
       books: [],
       displayAddModal:false,
+      showUpdateModal:false,
+      updatebookObj:{} // i need a new obj for the updated data
     };
   }
 
@@ -28,18 +31,18 @@ class BestBooks extends React.Component {
     this.setState({ displayAddModal:true });
   }
 
+  handelUpdatedModal = (item) => {
+    this.setState({ showUpdateModal:true , updatebookObj:item });
+  }
+
  
   fetchBooks = async () => {
-    try {
-      const responce = await axios.get(
+        await axios.get(
         `${process.env.REACT_APP_SERVER}/books?email=${this.state.ownerEmail}`
-      );
-      this.setState({
-        books: responce.data[0]?.books || [],
+      ).then(axiosResponse=>{this.setState({
+        books: axiosResponse.data
       });
-    } catch (error) {
-      alert(error.message);
-    }
+    }).catch(error => alert(error));
   };
 
   addBook=(e)=>{
@@ -47,14 +50,14 @@ class BestBooks extends React.Component {
 
         const body = {
             ownerEmail: this.props.auth0.user.email, // we are getting the email of the user from auth0
-            title: e.target.bookName.value,
+            title: e.target.title.value,
             description: e.target.description.value,
             status: e.target.status.value,
           };
       
           axios.post(`${process.env.REACT_APP_SERVER}/book`, body).then(axiosResponse => {
             // console.log(axiosResponse.data);
-            this.state.books.push(axiosResponse.data.books[0]);
+            this.state.books.push(axiosResponse.data);
             this.setState({
               books: this.state.books
             
@@ -67,30 +70,51 @@ class BestBooks extends React.Component {
 
 
         deleteBook=(index)=>{
-          const { user } = this.props.auth0;
-        
-          const Data={
-            email:user.email,
+          axios.delete(
+            `${process.env.REACT_APP_SERVER}/book/${index}`
+          ).then(axiosResponse=>{
+            if(axiosResponse){
+              const deletedBook =this.state.books.filter(book => book._id !== index);
+              this.setState({
+                books: deletedBook });
           }
-          axios
-          .delete(`${process.env.REACT_APP_SERVER}/book/${index}`,{params:Data})
-          .then((dataResult)=>{
-            this.setState({ 
-              books:dataResult.data
-                })
-                console.log('hello inside delete func',this.state.books);
-          })
-          .catch((err)=>{
-            console.log(err);
-            alert(err);
-            <h1>error happened</h1>
-        
-        
-          })
+        }).catch(error => alert(error));
         }
 
+        UpdateBook=((e)=>{
+          e.preventDefault();
+      const bookId = this.state.updatebookObj._id;
+              const body = {
+                  title: e.target.title.value,
+                  description: e.target.description.value,
+                  status: e.target.status.value,
+                };
+            
+                axios.put(`${process.env.REACT_APP_SERVER}/book/${bookId}`, body).then((axiosResponse) => {
+                  console.log('updated Cat Data:  ', axiosResponse.data);
 
 
+                  const updatedBookArr = this.state.books.map(book => {
+
+                    if (book._id === bookId) {
+                      book.title= axiosResponse.data.title;
+                      book.description= axiosResponse.data.description;
+                      book.status = axiosResponse.data.status;
+            
+                      return book;
+                    }
+                    return book;
+            
+                  });
+                  this.setState({books:updatedBookArr})
+                  this.handelUpdatedModal({})
+                  this.setState({ showUpdateModal:false });        
+
+                  
+                }).catch(error => alert(error));
+        });
+        
+        
   render() {
     return (
       <div>
@@ -103,10 +127,18 @@ class BestBooks extends React.Component {
                  addBook={this.addBook}
                 /> 
 
+          {this.state.showUpdateModal &&      
+          <UpdatedBook
+            show={this.state.showUpdateModal}
+            close={this.handelUpdatedModal}
+            UpdateBook={this.UpdateBook}
+            updatebookObj={this.state.updatebookObj}
+            />
+          }
           <Carousel>
             {this.state.books.length > 0 &&
-              this.state.books.map((book,i) => (
-                <Carousel.Item >
+              this.state.books.map((book,id) => (
+                <Carousel.Item key={id}>
                   <img
                     className='d-block w-30'
                     style={{
@@ -143,9 +175,8 @@ class BestBooks extends React.Component {
                       {book.description}
                       {book.status}
                     </p>
-                    <div key={i}>
-                    <Button variant="outline-danger" onClick={() => this.deleteBook(i)}>Delete Book</Button>
-                    </div>
+                    <Button variant="outline-danger" onClick={() => this.deleteBook(book._id)}>Delete Book</Button>
+                    <Button variant="outline-danger" onClick={() => this.handelUpdatedModal(book)}>Update Book</Button>
                   </Carousel.Caption>
                 </Carousel.Item>
               ))}
